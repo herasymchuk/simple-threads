@@ -7,30 +7,48 @@
  */
 public class Main {
 
-    static private Integer threadsCount = new Integer(2);
+    static public Locker lockObject = new Locker();
 
     static public void main(String[] args) {
-        synchronized (threadsCount) {
-            Thread prime = new Thread(new PrimeCalculationThread(threadsCount));
-            Thread fibonacci = new Thread(new FibonacciCalculationThread(threadsCount));
+        lockObject.setThreadsCounter(3);
+        Thread primeThread1 = new Thread(new PrimeCalculationThread(1, 100000));
+        Thread primeThread2 = new Thread(new PrimeCalculationThread(2, 200000));
+        Thread fibonacciThread = new Thread(new FibonacciCalculationThread(3, 100000000));
 
-            prime.start();
-            fibonacci.start();
+        Thread primeSyncThread1 = new Thread(new PrimeCalculationThread(4, 200000, lockObject));
+        Thread primeSyncThread2 = new Thread(new PrimeCalculationThread(5, 50000, lockObject));
+        Thread fibonacciSyncThread = new Thread(new FibonacciCalculationThread(6, 50000000, lockObject));
 
-            try {
-                while(threadsCount > 0) {
-                    threadsCount.wait();
+        primeThread1.start();
+        primeThread2.start();
+        fibonacciThread.start();
+
+        try {
+            primeThread1.join();
+            primeThread2.join();
+            fibonacciThread.join();
+
+            primeSyncThread1.start();
+            primeSyncThread2.start();
+            fibonacciSyncThread.start();
+
+            synchronized (lockObject) {
+                try {
+                    while(lockObject.getThreadsCounter() > 0) {
+                        lockObject.wait();
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println("Error! " + e);
                 }
-                System.out.println("All threads started!");
-                prime.join();
-                fibonacci.join();
-            } catch (InterruptedException e) {
-                System.out.println("Error!");
             }
+            System.out.println("All threads started!");
 
+            primeSyncThread1.join();
+            primeSyncThread2.join();
+            fibonacciSyncThread.join();
 
-
+        } catch (InterruptedException e) {
+            System.out.println("Error! " + e);
         }
-
     }
 }

@@ -7,35 +7,49 @@
  */
 public class PrimeCalculationThread implements Runnable {
 
-    private Integer counter;
+    private Locker lockObject;
+    private int id;
+    private int limit;
 
-    public PrimeCalculationThread(Integer counter) {
-        this.counter = counter;
+    public PrimeCalculationThread(int id, int limit) {
+        this.limit = limit;
+        this.id = id;
+    }
+
+    public PrimeCalculationThread(int id, int limit, Locker lockObject) {
+        this.lockObject = lockObject;
+        this.limit = limit;
+        this.id = id;
     }
 
     @Override
     public void run() {
-        synchronized (counter) {
-            System.out.println("[1] Prime numbers calculation thread start.");
-            counter--;
-            counter.notify();
+        if(lockObject != null) {
+            synchronized (lockObject) {
+                System.out.println("[sync][" + id + "] Prime numbers calculation thread start.");
+                lockObject.decrementThreadsCounter();
+                lockObject.notify();
+            }
+        } else {
+            System.out.println("[" + id + "] Prime numbers calculation thread start.");
         }
-        int limit = 100000;
-        System.out.println("Printing prime number from 1 to " + limit);
+
+        System.out.println("    [" + id + "] Perform prime number's calculation");
+        //System.out.println("Printing prime number from 1 to " + limit);
         for(int number = 2; number<=limit; number++){
             if(isPrime(number)){
                 //System.out.print(number + " ");
             }
         }
-        System.out.println("[1] Prime numbers calculation thread end.");
+        System.out.println("[" + id + "] Prime numbers calculation thread end.");
     }
 
     private boolean isPrime(int number){
         for(int i=2; i<number; i++){
             if(number%i == 0){
-                return false; //number is divisible so its not prime
+                return false;
             }
         }
-        return true; //number is prime now
+        return true;
     }
 }

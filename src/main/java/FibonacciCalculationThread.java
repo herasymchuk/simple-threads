@@ -7,20 +7,33 @@
  */
 public class FibonacciCalculationThread implements Runnable {
 
-    private Integer counter;
+    private Locker lockObject;
+    private int id;
+    int limit;
 
-    public FibonacciCalculationThread(Integer counter) {
-        this.counter = counter;
+    public FibonacciCalculationThread(int id, int limit) {
+        this.limit = limit;
+        this.id = id;
+    }
+
+    public FibonacciCalculationThread(int id, int limit, Locker lockObject) {
+        this.lockObject = lockObject;
+        this.limit = limit;
+        this.id = id;
     }
 
     @Override
     public void run() {
-        synchronized (counter) {
-            System.out.println("[2] Fibonacci numbers calculation thread start.");
-            counter--;
-            counter.notify();
+        if(lockObject != null) {
+            synchronized (lockObject) {
+                System.out.println("[sync][" + id + "] Fibonacci numbers calculation thread start.");
+                lockObject.decrementThreadsCounter();
+                lockObject.notify();
+            }
+        } else {
+            System.out.println("[" + id + "] Fibonacci numbers calculation thread start.");
         }
-        int limit = 10000000;
+        System.out.println("    [" + id + "] Perform Fibonacci number's calculation");
         //System.out.println("Printing Fibonanacci number from 1 to " + limit);
         int curNumber = 0;
         for(int i = 0; i < limit; i++) {
@@ -29,7 +42,7 @@ public class FibonacciCalculationThread implements Runnable {
                 //System.out.print(curNumber + " ");
             }
         }
-        System.out.println("[2] Fibonacci numbers calculation thread end.");
+        System.out.println("[" + id + "] Fibonacci numbers calculation thread end.");
     }
 
     private int getFibonacciNumber(int n) {
