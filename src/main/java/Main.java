@@ -7,45 +7,34 @@
  */
 public class Main {
 
-    static public Locker lockObject = new Locker();
+    //static public Locker lockObject = new Locker();
 
     static public void main(String[] args) {
-        lockObject.setThreadsCounter(3);
-        Thread primeThread1 = new Thread(new PrimeCalculationThread(1, 100000));
-        Thread primeThread2 = new Thread(new PrimeCalculationThread(2, 200000));
-        Thread fibonacciThread = new Thread(new FibonacciCalculationThread(3, 100000000));
+        Locker lockObject1 = new Locker();
+        lockObject1.setThreadsCounter(3);
 
-        Thread primeSyncThread1 = new Thread(new PrimeCalculationThread(4, 200000, lockObject));
-        Thread primeSyncThread2 = new Thread(new PrimeCalculationThread(5, 50000, lockObject));
-        Thread fibonacciSyncThread = new Thread(new FibonacciCalculationThread(6, 50000000, lockObject));
+        Locker lockObject2 = new Locker();
+        lockObject2.setThreadsCounter(3);
 
-        primeThread1.start();
-        primeThread2.start();
-        fibonacciThread.start();
+        SimultaneouslyExecutor executor1 = new SimultaneouslyExecutor(lockObject1,
+                new PrimeCalculationRunner(1, 100000, lockObject1),
+                new PrimeCalculationRunner(2, 20000, lockObject1),
+                new FibonacciCalculationRunner(3, 40000000, lockObject1));
+
+        SimultaneouslyExecutor executor2 = new SimultaneouslyExecutor(lockObject2,
+                new PrimeCalculationRunner(4, 200000, lockObject2),
+                new PrimeCalculationRunner(5, 50000, lockObject2),
+                new FibonacciCalculationRunner(6, 50000000, lockObject2));
 
         try {
-            primeThread1.join();
-            primeThread2.join();
-            fibonacciThread.join();
-
-            primeSyncThread1.start();
-            primeSyncThread2.start();
-            fibonacciSyncThread.start();
-
-            synchronized (lockObject) {
-                try {
-                    while(lockObject.getThreadsCounter() > 0) {
-                        lockObject.wait();
-                    }
-                } catch (InterruptedException e) {
-                    System.out.println("Error! " + e);
-                }
+            executor1.execute();
+            synchronized (lockObject1) {
+                lockObject1.wait();
+                System.out.println("All threads ended!");
             }
-            System.out.println("All threads started!");
 
-            primeSyncThread1.join();
-            primeSyncThread2.join();
-            fibonacciSyncThread.join();
+            executor2.execute();
+            System.out.println("All threads started!");
 
         } catch (InterruptedException e) {
             System.out.println("Error! " + e);

@@ -12,11 +12,14 @@ public class Locker {
         return threadsCounter;
     }
 
-    public void setThreadsCounter(int threadsCounter) {
+    synchronized public void setThreadsCounter(int threadsCounter) {
         this.threadsCounter = threadsCounter;
     }
 
-    public void decrementThreadsCounter() {
+    synchronized public void decrementThreadsCounter() {
         threadsCounter--;
+        if(threadsCounter == 0) {
+            notify();
+        }
     }
 }
