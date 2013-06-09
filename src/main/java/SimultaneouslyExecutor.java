@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class SimultaneouslyExecutor {
 
     private ArrayList<Thread> threads = new ArrayList<Thread>();
-    private Locker lockObject;
+    private final Locker lockObject;
 
 
     public SimultaneouslyExecutor(Locker lockObject, SimultaneouslyRunner... runners) {

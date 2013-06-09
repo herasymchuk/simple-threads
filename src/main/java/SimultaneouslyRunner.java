@@ -44,9 +44,9 @@ abstract public class SimultaneouslyRunner implements Runnable {
     abstract protected void doJob();
 
     protected void endProcess() {
+        System.out.println("[" + getId() + "] thread end.");
         if(lockObject != null) {
             lockObject.decrementThreadsCounter();
         }
-        System.out.println("[" + getId() + "] thread end.");
     }
 }
